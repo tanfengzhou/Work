@@ -13,6 +13,23 @@ import numpy as np
 #%%
 
 def mag_correction(input_ml, sta_lat, sta_lon, ev_lat, ev_lon, depth, s):
+    '''
+    Implements the magnitude correction as described by Mahani et al., 2018
+    
+    Params
+    ------
+    input_ml: The uncorrected magnitude
+    sta_lat: The latitude of the receiving station
+    sta_lon: The longitude of the receiving station
+    ev_lat: The latitude of the earthquake focus
+    ev_lon: The longitude of the earthquake focus
+    depth: The depth of the earthquake focus
+    s: The station correction factor
+    
+    Returns
+    -------
+    output_ml: The corrected station magnitude
+    '''
     epi_dist = obspy.geodetics.base.gps2dist_azimuth(sta_lat, sta_lon, ev_lat, ev_lon)
     d_hypo = np.sqrt((epi_dist**2) + depth**2)
     if (d_hypo<=85):

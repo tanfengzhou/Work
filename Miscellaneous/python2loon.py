@@ -55,8 +55,8 @@ auth = 'ISR  '
 StDly = '0.00'
 blank = ' '
 
-#canada_shp_file = gpd.read_file(r'C:\Users\User\Desktop\Work Stuff\Scripts\data\metadata\canada_names.csv.shp')
-#crs = {'init': 'epsg:4326'}
+canada_shp_file = gpd.read_file(r'C:\Users\User\Desktop\Work Stuff\Scripts\data\metadata\canada_names.csv.shp')
+crs = {'init': 'epsg:4326'}
 
 mw_events = pd.read_csv(r'C:\Users\User\Desktop\Work Stuff\Scripts\data\metadata\MW_catalogue.csv')
 mw_events['date']=pd.to_datetime(mw_events['Y-M-D']+' '+mw_events['H:M:S'], format='%Y-%m-%d %H:%M:%S').dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -93,8 +93,8 @@ origin_origerr_netmag = origin_origerr_netmag[((origin_origerr_netmag.ml!=-999) 
 
 #'DataFrame' object has no attribute 'mag'!!!
 
-#fixed_stamag = pd.read_csv('../../magnitude_correction/output_files/'+db_name+'_fixed_station_mags.csv', usecols = [3,8])
-#fixed_evmag = pd.read_csv('../../magnitude_correction/output_files/'+db_name+'_fixed_event_mags.csv', usecols = [0,1,2,3],index_col=[0])
+fixed_stamag = pd.read_csv('../../magnitude_correction/output_files/'+db_name+'_fixed_station_mags.csv', usecols = [3,8])
+fixed_evmag = pd.read_csv('../../magnitude_correction/output_files/'+db_name+'_fixed_event_mags.csv', usecols = [0,1,2,3],index_col=[0])
 
 #** FOLLOWING LINES CALCULATES EVENT MAGNITUDES FOR EACH EARTHQUAKES
 stamag_unique = stamag.magid.unique()

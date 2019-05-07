@@ -10,12 +10,12 @@ Created on Mon Dec 24 10:17:23 2018
 import pandas as pd
 import b_value
 import datetime as dt
-#import obspy
+import obspy
 
 
 #%%
 
-#Read in all dem tables
+#Read in all tables as pandas dataframes
 
 nedb_cat = pd.read_csv(r'C:\Users\User\Desktop\Work\Scripts\data\nedb_cat.csv')
 
@@ -35,19 +35,17 @@ jan_origin = pd.read_csv(r'C:\Users\User\Desktop\Work\Scripts\data\jan\pf299.ori
 jan_origerr = pd.read_csv(r'C:\Users\User\Desktop\Work\Scripts\data\jan\pf299.origerr', delim_whitespace=True, header=None, usecols = [0,11,12,13,14,15], names=['orid','sdobs','smajax','sminax','strike','sdepth'])
 
 #%%
+## Merge all the tables together
 
 april1_origin_origerr = pd.merge(april1_origin, april1_origerr, on='orid')
 april2_origin_origerr = pd.merge(april2_origin, april2_origerr, on='orid')
-
 mar_origin_origerr = pd.merge(mar_origin, mar_origerr, on='orid')
-
 feb_origin_origerr = pd.merge(feb_origin, feb_origerr, on='orid')
-
 jan_origin_origerr = pd.merge(jan_origin, jan_origerr, on='orid')
-
 cat = jan_origin_origerr.append(feb_origin_origerr.append(mar_origin_origerr.append(april1_origin_origerr.append(april2_origin_origerr))))
 
 #%%
+## Restrict data to study area
 
 lat_max = 61
 lat_min = 52
@@ -59,45 +57,26 @@ max_sdobs = 1
 min_ml = -999
 
 cat = cat[(cat.lat<=lat_max)&(cat.lat>=lat_min)&(cat.lon<=lon_max)&(cat.lon>=lon_min)&(cat.depth<=max_depth)&(cat.smajax<=max_smajax)&(cat.sdobs<=max_sdobs)&(cat.ml>-999)]
-#cat = cat.drop(labels='ml', axis=1)
-#%%
-cat = cat.reset_index(drop=True)
-cat.orid = cat.index + 1
-#cat.to_csv(r'C:\Users\User\Desktop\Work\Scripts\data\cur_cat.csv')
 
 #%%
+##Reset the index
+
+cat = cat.reset_index(drop=True)
+cat.orid = cat.index + 1
+
+#%%
+## Summary statistics
 
 cat_described = cat.describe()
 
 #%%
+##Create a column containing epoch time
 
 nedb_cat['strepoch'] = nedb_cat.Date + ' ' + nedb_cat['Time(UT)']
 nedb_cat['date'] = pd.to_datetime(nedb_cat.strepoch, format='%d/%m/%Y %H:%M:%S')
 nedb_cat['epoch'] = (nedb_cat['date'] - dt.datetime(1970,1,1)).dt.total_seconds()
 
-#%%
-'''
-my_caught = pd.DataFrame()
-
-for i in range(len(nedb_cat.index)):
-    my_temp = cat[abs(cat.time-nedb_cat.epoch[i])<=8]
-    my_caught = my_caught.append(my_temp)
-    
-#%%
-my_caught = my_caught.reset_index(drop=True)
-dist_list = []
-        
-for x in range(len(my_caught)):
-    lat1 = my_caught.lat[x]
-    lon1 = my_caught.lon[x]
-    lat2 = nedb_cat.Lat[x]
-    lon2 = nedb_cat.Long[x]
-    
-    dist = obspy.geodetics.base.gps2dist_azimuth(lat1, lon1, lat2, lon2)
-    dist = dist[0]/1000
-    dist_list.append(dist)
-    
-'''    
+  
 #%%
     
 left = pd.DataFrame()
