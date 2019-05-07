@@ -8,7 +8,7 @@ Created on Wed Nov 28 15:10:03 2018
 #%%
 
 '''
-Reads in an Antelope arrival table and outputs an Antelope readable arrival table
+Reads in a CSV table and outputs an Antelope readable arrival table
 '''
 
 import pandas as pd
