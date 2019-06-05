@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 30 14:18:40 2019
+
+@author: pgcseismolab
+"""
+
+#%%
+
+import obspy
+import pandas as pd
+import os
+from obspy.core.utcdatetime import UTCDateTime
+
+#%%
+
+###Put the path to the database here.###
+input_path = '~/Documents/nz_antelope/dbs/' 
+
+origin = pd.read_csv(input_path + '/db.origin', header=None, delim_whitespace=True, usecols=[0,1,2,3,4,7,8,20],
+                     names=['lat','lon','depth','time','orid','nassoc','ndef','ml'])
+
+arrival = pd.read_csv(input_path + '/db.arrival', header=None, delim_whitespace=True, usecols=[0,1,2,6,7],
+                      names=['sta', 'time', 'arid', 'chan', 'iphase'])
+
+assoc = pd.read_csv(input_path + '/db.assoc', header=None, delim_whitespace=True, usecols=[0,1,2,3],
+                    names=['arid', 'orid', 'sta', 'phase'])
+
+#%%
+
+cat = pd.merge(assoc, arrival, how='inner', on='arid')
+
+#%%
+
+##Read the miniseed data for all stations in a waveform directory
+st_dict = dict()
+home = os.path.expanduser('~')
+items = os.listdir(home + '/Documents/nz_antelope/wfs')
+
+for names in items:
+    if names.endswith('.mseed'):
+        st_dict[names.split('.')[0]] = obspy.read(home + '/Documents/nz_antelope/wfs/' + names,starttime=UTCDateTime("2016-11-13T11:59"), endtime=UTCDateTime("2016-11-13T13:01"))
+        
+    
+#%%
+##Reads the station xml files in a directory and removes instrument response   
+rr_dict = dict()
+      
+for sta in st_dict.keys():
+    tmp = []
+    inv = obspy.read_inventory(home + '/Documents/nz_antelope/station_xml/' + sta + '.xml', format='STATIONXML')
+    tr = st_dict[sta]
+    my_tr = tr.copy()
+    try:
+        my_tr.remove_response(inventory=inv, output="DISP")
+        tmp = my_tr
+        print(sta) 
+    except (KeyboardInterrupt, SystemExit):
+        raise
+        
+    except:
+        print('fail')
+        
+    rr_dict[sta] = tmp
+     
+        
+#%%
+ 
+for i in arrival.index:     
+    tmp_time = UTCDateTime(arrival.iloc[i].time)
+    sta = str(arrival.iloc[i].sta)
+    chan = str(arrival.iloc[i].chan).split('_')[0]
+    ct = 0
+    for j in rr_dict[sta]:
+        if j.stats['channel'] == chan:
+            my_chan = j.copy()
+            trim_tr = my_chan.trim(tmp_time - 20, tmp_time + 20)
+            ct += 1
+            ##At this point you can do whatever calculations you like on the waveforms
+            
+    if ct == 0:
+        print('error, channel not found: ' + sta + ' ' + chan)
+
+
